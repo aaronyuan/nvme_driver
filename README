@@ -16,9 +16,10 @@ https://github.com/aaronyuan/nvme_driver.git
 2. Requirements
     1. Gcc
     2. Inbox kernel source
-        a. On CentOS:
+        a. On CentOS/Redhat:
            Please make sure /lib/modules/`uname -r`/build is not empty.
-           If it's empty, find your according kernel-devel package on http://vault.centos.org/(your_centos_system_version)/os/x86_64/Packages/ and install it.
+           If it's empty, find your according kernel-devel package on
+           http://vault.centos.org/(your_centos_system_version)/os/x86_64/Packages/ and install it.
            Take CentOS 6.4 for example:
            #wget http://vault.centos.org/6.4/os/x86_64/Packages/kernel-devel-2.6.32-358.el6.x86_64.rpm
            #yum install kernel-devel-2.6.32-358.el6.x86_64.rpm
