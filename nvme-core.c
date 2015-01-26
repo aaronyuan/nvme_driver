@@ -59,6 +59,11 @@ module_param(use_threaded_interrupts, int, 0);
 static DEFINE_SPINLOCK(dev_list_lock);
 static LIST_HEAD(dev_list);
 static struct task_struct *nvme_thread;
+/*
+ * For the old kernel, file->private_data is not used in misc subsystem.
+ * So here we define a global variable as a workaround.
+ */
+static struct nvme_dev *dev_wa;
 
 /*
  * An NVM Express queue.  Each device has at least two (one for admin
@@ -2083,12 +2088,12 @@ static void nvme_free_dev(struct kref *kref)
 	kfree(dev->queues);
 	kfree(dev->entry);
 	kfree(dev);
+	dev_wa = NULL;
 }
 
 static int nvme_dev_open(struct inode *inode, struct file *f)
 {
-	struct nvme_dev *dev = container_of(f->private_data, struct nvme_dev,
-								miscdev);
+	struct nvme_dev *dev = dev_wa;
 	kref_get(&dev->kref);
 	f->private_data = dev;
 	return 0;
@@ -2159,6 +2164,7 @@ static int __devinit nvme_probe(struct pci_dev *pdev, const struct pci_device_id
 	dev = kzalloc(sizeof(*dev), GFP_KERNEL);
 	if (!dev)
 		return -ENOMEM;
+	dev_wa = dev;
 	dev->entry = kcalloc(num_possible_cpus(), sizeof(*dev->entry),
 								GFP_KERNEL);
 	if (!dev->entry)
@@ -2215,6 +2221,7 @@ static int __devinit nvme_probe(struct pci_dev *pdev, const struct pci_device_id
 	kfree(dev->queues);
 	kfree(dev->entry);
 	kfree(dev);
+	dev_wa = NULL;
 	return result;
 }
 
@@ -2319,6 +2326,6 @@ static void __exit nvme_exit(void)
 
 MODULE_AUTHOR("Matthew Wilcox <willy@linux.intel.com>");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("0.8");
+MODULE_VERSION("0.8.1");
 module_init(nvme_init);
 module_exit(nvme_exit);
